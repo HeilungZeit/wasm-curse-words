@@ -1,5 +1,5 @@
 use lingua::Language::{English, German, Russian};
-use lingua::{Language, LanguageDetectorBuilder};
+use lingua::LanguageDetectorBuilder;
 use regex::Regex;
 use rustrict::{Censor, Type};
 use wasm_bindgen::prelude::*;
@@ -75,7 +75,11 @@ impl WasmCurse {
         let languages = vec![English, German, Russian];
         let detector = LanguageDetectorBuilder::from_languages(&languages).build();
         let detected_language = detector.detect_language_of(text);
-        let lang = detected_language.unwrap_or(Language::English).to_string();
+        let lang = detected_language.unwrap().to_string();
+
+        if !statics::LANGS.contains_key(lang.as_str()) {
+            panic!("Language not found in statics: {}", lang);
+        }
 
         statics::LANGS[lang.as_str()].to_string()
     }

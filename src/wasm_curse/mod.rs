@@ -1,4 +1,6 @@
-use lingua::Language::{English, German, Russian};
+use std::collections::HashSet;
+
+use lingua::Language::{English, German, Polish, Russian};
 use lingua::LanguageDetectorBuilder;
 use regex::Regex;
 use rustrict::{Censor, Type};
@@ -72,7 +74,7 @@ impl WasmCurse {
 
     #[wasm_bindgen(js_name = defineLanguage)]
     pub fn define_language(&self, text: &str) -> String {
-        let languages = vec![English, German, Russian];
+        let languages = vec![English, German, Russian, Polish];
         let detector = LanguageDetectorBuilder::from_languages(&languages).build();
         let detected_language = detector.detect_language_of(text);
         let lang = detected_language.unwrap().to_string();
@@ -86,23 +88,44 @@ impl WasmCurse {
 
     #[wasm_bindgen(js_name = replaceCurseWords)]
     pub fn replace_curse_words(&self, text: &str) -> String {
-        if (self.languages_to_check.contains(&String::from("ru"))
-            || self.languages_to_check.contains(&String::from("de")))
-            && self.define_language(text) != "en"
+        let language = self.define_language(text);
+
+        let languages_to_check = self
+            .languages_to_check
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<HashSet<_>>();
+        let non_english_languages = ["ru", "de", "pl"]
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<HashSet<_>>();
+
+        if non_english_languages
+            .intersection(&languages_to_check)
+            .count()
+            > 0
+            && language != "en"
         {
-            let dictionary = match self.define_language(text).as_str() {
-                "ru" => utils::get_ru_dictionary(),
-                "de" => utils::get_de_dictionary(),
-                _ => vec![],
+            let dictionary = match language.as_str() {
+                "ru" => utils::get_ru_dictionary()
+                    .into_iter()
+                    .collect::<HashSet<_>>(),
+                "de" => utils::get_de_dictionary()
+                    .into_iter()
+                    .collect::<HashSet<_>>(),
+                "pl" => utils::get_pl_dictionary()
+                    .into_iter()
+                    .collect::<HashSet<_>>(),
+                _ => HashSet::new(),
             };
 
             let mut replaced_words = Vec::new();
+            let re = Regex::new(r"(\w+)(\W*)").unwrap();
 
             for word in text.split(" ").map(String::from).collect::<Vec<String>>() {
-                let mut replaced = word.clone();
+                let mut replaced = word.to_string();
                 let lower_word = word.to_lowercase();
 
-                let re = Regex::new(r"(\w+)(\W*)").unwrap();
                 if let Some(captures) = re.captures(&lower_word) {
                     let word_part = captures.get(1).map_or("", |m| m.as_str());
                     let punctuation_part = captures.get(2).map_or("", |m| m.as_str());

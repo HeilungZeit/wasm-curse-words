@@ -9,10 +9,10 @@ pub fn get_de_dictionary() -> Vec<&'static str> {
     german_words.lines().collect()
 }
 
-// pub fn get_pl_dictionary() -> Vec<&'static str> {
-//     let polish_words = include_str!("../curseDictionaries/filter_profanity_polish.txt");
-//     polish_words.lines().collect()
-// }
+pub fn get_pl_dictionary() -> Vec<&'static str> {
+    let polish_words = include_str!("../curseDictionaries/filter_profanity_polish.txt");
+    polish_words.lines().collect()
+}
 
 pub fn remove_all_symbols(text: String) -> Vec<String> {
     text.split_whitespace()

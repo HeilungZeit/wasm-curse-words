@@ -49,6 +49,10 @@ pub mod tests {
             "не в*********"
         );
         assert_eq!(wasm_curse.replace_curse_words("Мать ебал?"), "Мать е****?");
+        assert_eq!(
+            wasm_curse.replace_curse_words("kurwa jebana"),
+            "k***a j****a"
+        );
 
         // блять, даже не спрашивайте какого хуя немецкий так ебашит, да и похуй, что то сделало и норм))))
         assert_eq!(

@@ -287,6 +287,7 @@ dependencies = [
  "itertools 0.12.1",
  "lingua-english-language-model",
  "lingua-german-language-model",
+ "lingua-polish-language-model",
  "lingua-russian-language-model",
  "maplit",
  "once_cell",
@@ -314,6 +315,15 @@ name = "lingua-german-language-model"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0dd4041d542b6512d415c0ea6979333e5e88698b966dda7b9bf06029bf690a13"
+dependencies = [
+ "include_dir",
+]
+
+[[package]]
+name = "lingua-polish-language-model"
+version = "1.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f298b650531a5d85d3101ad7db7a5cbf3b671b71f01a775e97d4165eebc9ff75"
 dependencies = [
  "include_dir",
 ]
@@ -782,7 +792,7 @@ checksum = "af190c94f2773fdb3729c55b007a722abb5384da03bc0986df4c289bf5567e96"
 
 [[package]]
 name = "wasm-curse-words"
-version = "1.0.1"
+version = "1.1.0"
 dependencies = [
  "lingua",
  "phf",

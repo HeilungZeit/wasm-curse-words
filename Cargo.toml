@@ -1,6 +1,6 @@
 [package]
 name = "wasm-curse-words"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2021"
 license = "MIT"
 
@@ -14,6 +14,7 @@ lingua = { version = "1.6.2", default-features = false, features = [
     "english",
     "russian",
     "german",
+    "polish",
 ] }
 regex = "1.6.2"
 phf = { version = "0.11.2", features = ["macros"] }

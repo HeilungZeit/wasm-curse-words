@@ -55,4 +55,5 @@ pub static LANGS: phf::Map<&'static str, &'static str> = phf_map! {
     "Sinhalese" => "si",
     "Tibetan" => "bo",
     "Bhutanese" => "dz",
+    "Belarusian" => "be",
 };

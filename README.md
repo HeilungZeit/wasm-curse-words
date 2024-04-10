@@ -14,7 +14,7 @@ npm i wasm-curse-words
 ## Usage (with Code Highlighting)
 
 ```javascript
-const WasmCurse = require('wasm-curse-words');
+import { WasmCurse } from 'wasm-curse-words';
 
 // Create a WasmCurse instance (notice the variable name)
 const curse = new WasmCurse('*', ['en', 'de', 'ru']);

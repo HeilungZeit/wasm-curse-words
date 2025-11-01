@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use lingua::Language::{English, German, Polish, Russian};
 use lingua::LanguageDetectorBuilder;
 use regex::Regex;
@@ -27,42 +25,52 @@ impl WasmCurse {
 
     #[wasm_bindgen(js_name = checkCurseWords)]
     pub fn check_curse_words(&self, text: &str) -> bool {
+        let lang = self.define_language(text);
+        
         if (self.languages_to_check.contains(&String::from("ru"))
-            || self.languages_to_check.contains(&String::from("de")))
-            && self.define_language(text) != "en"
+            || self.languages_to_check.contains(&String::from("de"))
+            || self.languages_to_check.contains(&String::from("pl")))
+            && lang != "en"
         {
-            let dictionary = match self.define_language(text).as_str() {
+            let dictionary = match lang.as_str() {
                 "ru" => utils::get_ru_dictionary(),
                 "de" => utils::get_de_dictionary(),
-                _ => vec![],
+                "pl" => utils::get_pl_dictionary(),
+                _ => return false,
             };
 
-            let text = text.to_lowercase();
-
-            let all_words: String = utils::remove_all_symbols(text).join(" ");
-
-            let words_in_text: Vec<&str> = all_words.split_whitespace().collect();
-
-            let mut is_inappropriate = false;
-
-            for word in words_in_text {
-                for &dictionary_word in &dictionary {
-                    if dictionary_word.starts_with("\\w*") {
-                        let re = Regex::new(&dictionary_word[3..]).unwrap();
-                        if re.is_match(word) {
-                            is_inappropriate = true;
-                            break;
-                        }
-                    } else if word == dictionary_word {
-                        is_inappropriate = true;
-                        break;
-                    }
-                }
-                if is_inappropriate {
-                    break;
+            let text_lower = text.to_lowercase();
+            
+            let regex_patterns: Vec<_> = dictionary
+                .iter()
+                .filter(|&&word| utils::is_regex_pattern(word))
+                .collect();
+            
+            let compiled_regexes: Vec<Regex> = regex_patterns
+                .iter()
+                .filter_map(|&&pattern| Regex::new(pattern).ok())
+                .collect();
+            
+            for re in &compiled_regexes {
+                if re.is_match(&text_lower) {
+                    return true;
                 }
             }
-            return is_inappropriate;
+            
+            let all_words = utils::remove_all_symbols(text_lower);
+            for word in &all_words {
+                if dictionary.contains(word.as_str()) {
+                    return true;
+                }
+                
+                for re in &compiled_regexes {
+                    if re.is_match(word) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
         }
 
         let analysis = Censor::from_str(text)
@@ -90,68 +98,47 @@ impl WasmCurse {
     pub fn replace_curse_words(&self, text: &str) -> String {
         let language = self.define_language(text);
 
-        let languages_to_check = self
-            .languages_to_check
-            .iter()
-            .map(|s| s.to_string())
-            .collect::<HashSet<_>>();
-        let non_english_languages = ["ru", "de", "pl"]
-            .iter()
-            .map(|s| s.to_string())
-            .collect::<HashSet<_>>();
+        let has_non_english = self.languages_to_check.iter()
+            .any(|lang| lang == "ru" || lang == "de" || lang == "pl");
 
-        if non_english_languages
-            .intersection(&languages_to_check)
-            .count()
-            > 0
-            && language != "en"
-        {
+        if has_non_english && language != "en" {
             let dictionary = match language.as_str() {
-                "ru" => utils::get_ru_dictionary()
-                    .into_iter()
-                    .collect::<HashSet<_>>(),
-                "de" => utils::get_de_dictionary()
-                    .into_iter()
-                    .collect::<HashSet<_>>(),
-                "pl" => utils::get_pl_dictionary()
-                    .into_iter()
-                    .collect::<HashSet<_>>(),
-                _ => HashSet::new(),
+                "ru" => utils::get_ru_dictionary(),
+                "de" => utils::get_de_dictionary(),
+                "pl" => utils::get_pl_dictionary(),
+                _ => return text.to_string(),
             };
 
-            let mut replaced_words = Vec::new();
-            let re = Regex::new(r"(\w+)(\W*)").unwrap();
+            let word_re = Regex::new(r"(\w+)(\W*)").unwrap();
+            
+            let (simple_words, regex_patterns): (Vec<_>, Vec<_>) = dictionary
+                .iter()
+                .partition(|&&word| !utils::is_regex_pattern(word));
+            
+            let compiled_regexes: Vec<Regex> = regex_patterns
+                .iter()
+                .filter_map(|&&pattern| Regex::new(pattern).ok())
+                .collect();
 
-            for word in text.split(" ").map(String::from).collect::<Vec<String>>() {
-                let mut replaced = word.to_string();
-                let lower_word = word.to_lowercase();
+            let replaced_words: Vec<String> = text.split(' ')
+                .map(|word| {
+                    let lower_word = word.to_lowercase();
 
-                if let Some(captures) = re.captures(&lower_word) {
-                    let word_part = captures.get(1).map_or("", |m| m.as_str());
-                    let punctuation_part = captures.get(2).map_or("", |m| m.as_str());
+                    if let Some(captures) = word_re.captures(&lower_word) {
+                        let word_part = captures.get(1).map_or("", |m| m.as_str());
+                        let punctuation_part = captures.get(2).map_or("", |m| m.as_str());
 
-                    for &dictionary_word in &dictionary {
-                        let lower_dictionary_word = dictionary_word.to_lowercase();
-                        if lower_dictionary_word.starts_with("\\w*")
-                            || lower_dictionary_word.ends_with("\\w*")
-                        {
-                            let re = Regex::new(&lower_dictionary_word).unwrap();
-                            if re.is_match(word_part) {
-                                replaced = word
-                                    .chars()
-                                    .enumerate()
-                                    .map(|(i, c)| {
-                                        if i > 0 && i < word_part.len() - 1 {
-                                            '*'
-                                        } else {
-                                            c
-                                        }
-                                    })
-                                    .collect::<String>();
-                                replaced.push_str(punctuation_part);
-                            }
-                        } else if word_part == lower_dictionary_word {
-                            replaced = word
+                        // Fast exact match with simple words
+                        let mut is_profane = simple_words.iter().any(|&&w| w == word_part);
+                        
+                        // Check regex patterns if not found
+                        if !is_profane {
+                            is_profane = compiled_regexes.iter()
+                                .any(|re| re.is_match(word_part) || re.is_match(&lower_word));
+                        }
+
+                        if is_profane {
+                            let mut censored: String = word
                                 .chars()
                                 .enumerate()
                                 .map(|(i, c)| {
@@ -161,13 +148,15 @@ impl WasmCurse {
                                         c
                                     }
                                 })
-                                .collect::<String>();
-                            replaced.push_str(punctuation_part);
+                                .collect();
+                            censored.push_str(punctuation_part);
+                            return censored;
                         }
                     }
-                }
-                replaced_words.push(replaced);
-            }
+                    word.to_string()
+                })
+                .collect();
+            
             return replaced_words.join(" ");
         }
 

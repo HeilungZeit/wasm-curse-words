@@ -51,6 +51,7 @@ Creates a new instance of WasmCurse.
 
 ## Change log
 
+`v1.2.0` - optimized dictionary lookups with HashSet (O(1) instead of O(n)); fixed regex pattern handling for all languages; added support for phrases with spaces; improved performance;
 `v1.1.0` - added support of Polish language; small optimizations;
 `v1.0.1` - added panic to `defineLanguage` method when can't define a lang;
 `v1.0.0` - migration to class;

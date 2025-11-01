@@ -77,4 +77,77 @@ pub mod tests {
             "de"
         );
     }
+
+    #[test]
+    fn test_german_regex_patterns() {
+        let wasm_curse_de = WasmCurse::new(Some('*'), vec!["de".to_string()].into());
+        
+        // Test \w* patterns - words ending with pattern
+        assert_eq!(wasm_curse_de.check_curse_words("verficktnochmal"), true);
+        assert_eq!(wasm_curse_de.check_curse_words("arschgesicht"), true);
+        assert_eq!(wasm_curse_de.check_curse_words("hurensohn"), true);
+        
+        // Test \W* patterns - words with spaces/punctuation
+        assert_eq!(wasm_curse_de.check_curse_words("leck mich am arsch"), true);
+        assert_eq!(wasm_curse_de.check_curse_words("geht sterben"), true);
+        
+        // Test alternation patterns like schei(ss|ß)e
+        assert_eq!(wasm_curse_de.check_curse_words("scheisse"), true);
+        assert_eq!(wasm_curse_de.check_curse_words("scheiße"), true);
+        
+        // Test simple exact matches
+        assert_eq!(wasm_curse_de.check_curse_words("arschloch"), true);
+        assert_eq!(wasm_curse_de.check_curse_words("schlampe"), true);
+        
+        // Test non-profane words
+        assert_eq!(wasm_curse_de.check_curse_words("Guten Tag"), false);
+        assert_eq!(wasm_curse_de.check_curse_words("Wie geht es dir"), false);
+    }
+
+    #[test]
+    fn test_russian_regex_patterns() {
+        let wasm_curse_ru = WasmCurse::new(Some('*'), vec!["ru".to_string()].into());
+        
+        // Test \w* and \w+ patterns
+        assert_eq!(wasm_curse_ru.check_curse_words("ебать"), true);
+        assert_eq!(wasm_curse_ru.check_curse_words("ебало"), true);
+        assert_eq!(wasm_curse_ru.check_curse_words("гавно"), true);
+        assert_eq!(wasm_curse_ru.check_curse_words("гавноед"), true);
+        assert_eq!(wasm_curse_ru.check_curse_words("ахуеть"), true);
+        
+        // Test + patterns like бля+
+        assert_eq!(wasm_curse_ru.check_curse_words("бляяя"), true);
+        assert_eq!(wasm_curse_ru.check_curse_words("блять"), true);
+        
+        // Test phrases with spaces
+        assert_eq!(wasm_curse_ru.check_curse_words("пиздюлей навешать"), true);
+        assert_eq!(wasm_curse_ru.check_curse_words("какого хуя"), true);
+        assert_eq!(wasm_curse_ru.check_curse_words("пизды дать"), true);
+        
+        // Test exact matches
+        assert_eq!(wasm_curse_ru.check_curse_words("сука"), true);
+        assert_eq!(wasm_curse_ru.check_curse_words("пидр"), true);
+        
+        // Test non-profane words
+        assert_eq!(wasm_curse_ru.check_curse_words("Привет как дела"), false);
+        assert_eq!(wasm_curse_ru.check_curse_words("хороший день"), false);
+    }
+
+    #[test]
+    fn test_polish_regex_patterns() {
+        let wasm_curse_pl = WasmCurse::new(Some('*'), vec!["pl".to_string()].into());
+        
+        // Test [ey] pattern: popierdolon[ey]
+        assert_eq!(wasm_curse_pl.check_curse_words("popierdolone to jest"), true);
+        assert_eq!(wasm_curse_pl.check_curse_words("popierdolony on"), true);
+        
+        // Test exact matches
+        assert_eq!(wasm_curse_pl.check_curse_words("jebana jest"), true);
+        assert_eq!(wasm_curse_pl.check_curse_words("pojebana"), true);
+        assert_eq!(wasm_curse_pl.check_curse_words("zajebana"), true);
+        
+        // Test non-profane words
+        assert_eq!(wasm_curse_pl.check_curse_words("Dzień dobry"), false);
+        assert_eq!(wasm_curse_pl.check_curse_words("Jak się masz"), false);
+    }
 }

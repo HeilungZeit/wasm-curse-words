@@ -1,25 +1,66 @@
-// нельзя сделать динмаческие пути из-за того, что метод include_str! обрабатывается на этапе компиляции
-pub fn get_ru_dictionary() -> Vec<&'static str> {
+use once_cell::sync::Lazy;
+use std::collections::HashSet;
+
+// Cache dictionaries as HashSet for O(1) lookup instead of O(n)
+static RU_DICTIONARY: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let russian_words = include_str!("../curseDictionaries/filter_profanity_russian.txt");
     russian_words.lines().collect()
-}
+});
 
-pub fn get_de_dictionary() -> Vec<&'static str> {
+static DE_DICTIONARY: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let german_words = include_str!("../curseDictionaries/filter_profanity_german.txt");
     german_words.lines().collect()
-}
+});
 
-pub fn get_pl_dictionary() -> Vec<&'static str> {
+static PL_DICTIONARY: Lazy<HashSet<&'static str>> = Lazy::new(|| {
     let polish_words = include_str!("../curseDictionaries/filter_profanity_polish.txt");
     polish_words.lines().collect()
+});
+
+pub fn get_ru_dictionary() -> &'static HashSet<&'static str> {
+    &RU_DICTIONARY
+}
+
+pub fn get_de_dictionary() -> &'static HashSet<&'static str> {
+    &DE_DICTIONARY
+}
+
+pub fn get_pl_dictionary() -> &'static HashSet<&'static str> {
+    &PL_DICTIONARY
 }
 
 pub fn remove_all_symbols(text: String) -> Vec<String> {
     text.split_whitespace()
-        .map(|word| {
-            let mut word = word.to_string();
-            word.retain(|c| c.is_alphabetic());
-            word
+        .filter_map(|word| {
+            let clean: String = word.chars().filter(|c| c.is_alphabetic()).collect();
+            if clean.is_empty() {
+                None
+            } else {
+                Some(clean)
+            }
         })
-        .collect::<Vec<String>>()
+        .collect()
+}
+
+pub fn is_regex_pattern(word: &str) -> bool {
+    word.contains(r"\w")
+        || word.contains(r"\W")
+        || word.contains(r"\d")
+        || word.contains(r"\D")
+        || word.contains(r"\s")
+        || word.contains(r"\S")
+        || word.contains('(')
+        || word.contains(')')
+        || word.contains('[')
+        || word.contains(']')
+        || word.contains('{')
+        || word.contains('}')
+        || word.contains('?')
+        || word.contains('+')
+        || word.contains('*')
+        || word.contains('|')
+        || word.contains('^')
+        || word.contains('$')
+        || word.contains('.')
+        || word.contains(' ')
 }

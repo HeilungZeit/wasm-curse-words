@@ -1,4 +1,4 @@
-## wasm-curse-words
+## [wasm-curse-words](https://github.com/HeilungZeit/wasm-curse-words)
 
 The `wasm-curse-words` library, written in Rust and compiled to WebAssembly, offers functionality for detecting and replacing profanity within text. It integrates seamlessly with JavaScript environments (tested with [NestJs](https://nestjs.com/)).
 

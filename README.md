@@ -51,7 +51,31 @@ Creates a new instance of WasmCurse.
 
 ## Change log
 
-`v1.2.0` - optimized dictionary lookups with HashSet (O(1) instead of O(n)); fixed regex pattern handling for all languages; added support for phrases with spaces; improved performance;
-`v1.1.0` - added support of Polish language; small optimizations;
-`v1.0.1` - added panic to `defineLanguage` method when can't define a lang;
-`v1.0.0` - migration to class;
+### `v1.3.0`
+
+- Cached language detector initialization to avoid rebuilding language models on every call.
+- Cached compiled dictionaries and regex patterns for faster profanity checks and replacements.
+- Fixed multibyte character masking for Cyrillic and other non-ASCII words.
+- Added safe fallback behavior for empty or undefined language detection results.
+- Fixed custom replacement character handling for Russian, German, and Polish replacements.
+- Changed release optimization level to `opt-level = 3`.
+
+### `v1.2.0`
+
+- Optimized dictionary lookups with HashSet (O(1) instead of O(n)).
+- Fixed regex pattern handling for all languages.
+- Added support for phrases with spaces.
+- Improved performance.
+
+### `v1.1.0`
+
+- Added support of Polish language.
+- Small optimizations.
+
+### `v1.0.1`
+
+- Added panic to `defineLanguage` method when can't define a lang.
+
+### `v1.0.0`
+
+- Migration to class.

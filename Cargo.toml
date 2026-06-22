@@ -9,7 +9,7 @@ crate-type = ["cdylib", "rlib"]
 
 [profile.release]
 lto = true
-opt-level = 's'
+opt-level = 3
 
 [dependencies]
 rustrict = "0.7.25"

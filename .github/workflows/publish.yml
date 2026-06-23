@@ -3,7 +3,7 @@ name: Publish to npm
 on:
   push:
     tags:
-      - "v*.*.*"
+      - 'v*.*.*'
 
 permissions:
   contents: read
@@ -36,7 +36,7 @@ jobs:
             ${{ runner.os }}-cargo-
 
       - name: Install wasm-pack
-        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+        run: cargo install wasm-pack --version 0.15.0 --locked --force
 
       - name: Build WASM package
         run: wasm-pack build --target web --release
@@ -44,8 +44,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
-          registry-url: "https://registry.npmjs.org"
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
 
       - name: Publish to npm
         run: npm publish ./pkg --access public --provenance
